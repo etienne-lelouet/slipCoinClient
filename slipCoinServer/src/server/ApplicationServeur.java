@@ -6,10 +6,12 @@ import network.buffers.NetBuffer;
 import network.tcp.TCPClient;
 import network.tcp.TCPServer;
 import modele.Database;
+import server.ServerClient;
 
 public class ApplicationServeur {
     public int tcpPort;
     public Database db;
+
     /** Ecrire un message sur la console (+ rapide à écrire !)
      * @param infoMessage message à écrire
      */
@@ -20,29 +22,7 @@ public class ApplicationServeur {
 
     public static int nextClientID = 1;
 
-    class CustomServerClient {
-        public TCPClient tcpSock;
-        private final int ID;
-        private boolean estAuthentifie = false;
-        private String nomDeCompte, motDePasse;
-
-        public boolean estActuellementAuthentifie() {
-                return estAuthentifie;
-        }
-        public void vientDEtreAuthentifie(String arg_compte, String arg_pass) {
-                nomDeCompte = arg_compte;
-                motDePasse = arg_pass;
-                estAuthentifie = true;
-        }
-
-        public CustomServerClient(TCPClient arg_tcpSock) {
-                tcpSock = arg_tcpSock;
-                ID = ApplicationServeur.nextClientID;
-                ApplicationServeur.nextClientID++;
-        }
-    }
-
-    public ArrayList<CustomServerClient> serverClientList = new ArrayList<CustomServerClient>();
+    public ArrayList<ServerClient> serverClientList = new ArrayList<ServerClient>();
 
     public static void sleep(long millisec) {
             try { Thread.sleep(millisec); } catch (InterruptedException e1) {
@@ -58,7 +38,6 @@ public class ApplicationServeur {
     }
     
     public void start() {
-        int tcpPort = 12345;
         server = new TCPServer(tcpPort);
         if (server.isListening()) {
                 log("Le serveur écoute sur le port " + tcpPort);
@@ -74,8 +53,8 @@ public class ApplicationServeur {
             if (newTCPClient != null) {
                 // Nouveau client accepté !
                 // Je crée le client du serveur
-                CustomServerClient servClient = new CustomServerClient(newTCPClient);
-                serverClientList.add(servClient);
+                ServerClient client = new ServerClient(newTCPClient);
+                serverClientList.add(client);
 
                 /*
                 System.out.println("Serveur : nouveau client - Liste des clients :");
@@ -87,7 +66,7 @@ public class ApplicationServeur {
             // Suppression des clients qui ne sont plus connectés
             int clientIndex = 0;
             while (clientIndex < serverClientList.size()) {
-                CustomServerClient servClient = serverClientList.get(clientIndex);
+                ServerClient servClient = serverClientList.get(clientIndex);
                 if ( ! servClient.tcpSock.isConnected() )  {
                     boolean criticalErrorOccured = servClient.tcpSock.criticalErrorOccured();
                     if (criticalErrorOccured) {
@@ -95,76 +74,54 @@ public class ApplicationServeur {
                     }
                     servClient.tcpSock.stop(); // facultatif
                     serverClientList.remove(clientIndex);
-                    System.out.println("Serveur : Déconnexion du client : " + servClient.ID);
                 } else
                     clientIndex++;
             }
 
             // Ecouter ce que les clients demandent
             for (clientIndex = 0; clientIndex < serverClientList.size(); clientIndex++) {
-                    CustomServerClient servClient = serverClientList.get(clientIndex);
+                    ServerClient servClient = serverClientList.get(clientIndex);
                     NetBuffer newMessage = servClient.tcpSock.getNewMessage();
                     if (newMessage != null) {
-                        log("Nouveau message reçu de " + servClient.ID);
                         if (! newMessage.currentData_isInt()) {
                                 log("ERREUR : message mal formatté.");
-                                // Je ne réponds rien
-                                //servClient.tcpSock.sendMessage(replyMessage);
                         } else {
                             int messageType = newMessage.readInteger();
+                            NetBuffer reply = new NetBuffer();
                             switch(messageType){
                                 case '1':
-                                    Modele.Connexion(database, username, password);
+                                    String username = newMessage.readString();
+                                    String password = newMessage.readString();
+                                    int res = Modele.Connexion(db, username, password);
+                                    
+                                    if (res > 0) {
+                                        reply.writeInt(1);
+                                        reply.writeBool(true);
+                                        reply.writeString("Bienvenue " + username);
+                                        servClient.tcpSock.sendMessage(reply);  
+                                    } else if (res == -1) {
+                                        reply.writeInt(1);
+                                        reply.writeBool(false);
+                                        reply.writeString("couple login/mot de passe inconnu");
+                                        servClient.tcpSock.sendMessage(reply); 
+                                        
+                                    } else {
+                                        reply.writeInt(1);
+                                        reply.writeBool(false);
+                                        reply.writeString("erreur lors du processus de connexion, veuillez reessayer plus tard");
+                                        servClient.tcpSock.sendMessage(reply);
+                                    }
+                                    break;
+                                case '2':
                                     break;
                                 default:
-                                    NetBuffer reply = new NetBuffer();
                                     reply.writeInt(9);
                                     reply.writeString("error");
                                     reply.writeString("Id Du message invalide");
                                     servClient.tcpSock.sendMessage(reply);
                             }
-                                // Authentification
-                                if (messageType == 1) {
-                                        String nomCompte = newMessage.readString();
-                                        String motDePasse = newMessage.readString();
-                                        if (checkUserCredentials(nomCompte, motDePasse)) {
-                                                servClient.vientDEtreAuthentifie(nomCompte, motDePasse);
-                                                // Réussi
-                                                NetBuffer reply = new NetBuffer();
-                                                reply.writeInt(1);
-                                                reply.writeBool(true);
-                                                reply.writeString("Bienvenue " + nomCompte);
-                                                servClient.tcpSock.sendMessage(reply);
-                                        } else {
-                                                NetBuffer reply = new NetBuffer();
-                                                reply.writeInt(1);
-                                                reply.writeBool(false);
-                                                reply.writeString("Echec de la connexion : mot de passe ou nom de compte invalide.");
-                                                servClient.tcpSock.sendMessage(reply);
-                                        }
-                                }
-                                // Demander son ID
-                                if (messageType == 2) {
-                                        NetBuffer reply = new NetBuffer();
-                                        reply.writeInt(2);
-                                        reply.writeBool(servClient.estActuellementAuthentifie());
-                                        if (servClient.estActuellementAuthentifie()) {
-                                                reply.writeInt(servClient.ID);
-                                        }
-                                        servClient.tcpSock.sendMessage(reply);
-                                }
-                                // Demander son nom (amnésie power...)
-                                if (messageType == 3) {
-                                        NetBuffer reply = new NetBuffer();
-                                        reply.writeInt(3);
-                                        reply.writeBool(servClient.estActuellementAuthentifie());
-                                        if (servClient.estActuellementAuthentifie()) {
-                                                reply.writeString(servClient.nomDeCompte);
-                                        }
-                                        servClient.tcpSock.sendMessage(reply);
-                                }
 
-                            }
+                        }
                     }
             }
             sleep(1); // 1ms entre chaque itération, minimum
