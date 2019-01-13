@@ -5,4 +5,4 @@
  * @author admin
  *
  */
-package slip.network.buffers;
+package network.buffers;

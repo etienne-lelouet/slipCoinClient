@@ -5,4 +5,4 @@
  * @author admin
  *
  */
-package slip.test;
+package test;

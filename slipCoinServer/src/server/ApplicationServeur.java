@@ -1,6 +1,8 @@
 package server;
 
 import java.util.ArrayList;
+
+import dataClasses.User;
 import modele.Modele;
 import network.buffers.NetBuffer;
 import network.tcp.TCPClient;
@@ -84,7 +86,7 @@ public class ApplicationServeur {
                     NetBuffer newMessage = servClient.tcpSock.getNewMessage();
                     if (newMessage != null) {
                         if (! newMessage.currentData_isInt()) {
-                                log("ERREUR : message mal formattÃ©.");
+                                log("ERREUR : message mal formatté.");
                         } else {
                             int messageType = newMessage.readInteger();
                             NetBuffer reply = new NetBuffer();
@@ -92,23 +94,17 @@ public class ApplicationServeur {
                                 case '1':
                                     String username = newMessage.readString();
                                     String password = newMessage.readString();
-                                    int res = Modele.Connexion(db, username, password);
+                                    User user = Modele.Connexion(db, username, password);
                                     
-                                    if (res > 0) {
+                                    if (user != null) { 
                                         reply.writeInt(1);
                                         reply.writeBool(true);
                                         reply.writeString("Bienvenue " + username);
                                         servClient.tcpSock.sendMessage(reply);  
-                                    } else if (res == -1) {
-                                        reply.writeInt(1);
-                                        reply.writeBool(false);
-                                        reply.writeString("couple login/mot de passe inconnu");
-                                        servClient.tcpSock.sendMessage(reply); 
-                                        
                                     } else {
                                         reply.writeInt(1);
                                         reply.writeBool(false);
-                                        reply.writeString("erreur lors du processus de connexion, veuillez reessayer plus tard");
+                                        reply.writeString("couple login/mot de passe inconnu");
                                         servClient.tcpSock.sendMessage(reply);
                                     }
                                     break;

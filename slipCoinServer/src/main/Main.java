@@ -5,6 +5,7 @@
  */
 package main;
 import modele.Database;
+import server.ApplicationServeur;
 
 /**
  *
@@ -12,4 +13,10 @@ import modele.Database;
  */
 public class Main {
     public static Database db = new Database("localhost", "zbeb", "zbeb", "zbeb");
+    public static int port = 6969;
+    
+    public static void main (String[] args) {
+    	ApplicationServeur serveur = new ApplicationServeur(port, db);
+    	serveur.start();
+    }
 }
