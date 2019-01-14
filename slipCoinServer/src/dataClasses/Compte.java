@@ -16,4 +16,23 @@ public class Compte {
 		this.numeroCompte = numeroCompte;
 		this.solde = solde;
 	}
+	public String getNumeroCompte() {
+		return numeroCompte;
+	}
+	public void setNumeroCompte(String numeroCompte) {
+		this.numeroCompte = numeroCompte;
+	}
+	public float getSolde() {
+		return solde;
+	}
+	public void setSolde(float solde) {
+		this.solde = solde;
+	}
+	public int getIdUser() {
+		return idUser;
+	}
+	public void setIdUser(int idUser) {
+		this.idUser = idUser;
+	}
+	
 }

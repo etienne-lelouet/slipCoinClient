@@ -9,6 +9,7 @@ public class Database {
     private String serveur, bdd, user, mdp;
 
     public Database(String serveur, String bdd, String user, String mdp) {
+    	System.out.println("test");
         this.serveur = serveur;
         this.bdd = bdd;
         this.user = user;
@@ -24,7 +25,8 @@ public class Database {
     }
 
     public Connection connect() throws SQLException {
-        String url = "jdbc:mysql://" + this.serveur + "/" + this.bdd;
+        String url = "jdbc:mysql://" + this.serveur + "/" + this.bdd + "?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC";
+        System.out.println(url);
         return DriverManager.getConnection(url, this.user, this.mdp);
     }
 }

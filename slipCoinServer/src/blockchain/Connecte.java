@@ -88,6 +88,12 @@ public class Connecte extends JFrame {
 		
 	}
 	
+	public static void sleep(long millisec) {
+		try { Thread.sleep(millisec); } catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
 	public TCPClient getTcpclient() {
 		return tcpclient;
 	}
@@ -100,7 +106,7 @@ public class Connecte extends JFrame {
 	 * Create the frame.
 	 */
 	public Connecte() {
-		int tcpPort=12345;
+		int tcpPort=6969;
 		this.tcpclient=new TCPClient("localhost", tcpPort);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 450, 300);
@@ -139,11 +145,20 @@ public class Connecte extends JFrame {
 				demandeConnexionMessage.writeInt(1);
 				demandeConnexionMessage.writeString(username);
 				demandeConnexionMessage.writeString(pass);
+				System.out.println(username+" "+pass);
 				TCPClient tmp_client=getTcpclient();
 				tmp_client.sendMessage(demandeConnexionMessage);
+				sleep(1);
 				//System.out.println(username+" "+pass);
-				NetBuffer mess_recu = tmp_client.getNewMessage();
+				NetBuffer mess_recu;
+				while ((mess_recu= tmp_client.getNewMessage()) ==null) {
+					 try { Thread.sleep(1); } catch (InterruptedException e1) {
+		                    e1.printStackTrace();
+		            }
+				}
+				
 				int id=mess_recu.readInt();
+				System.out.println(id);
 				boolean res=mess_recu.readBoolean();
 				
 				if (res) {

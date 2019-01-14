@@ -47,7 +47,12 @@ public class Home extends JFrame {
 		this.id = id;
 	}
 
-
+	public static void sleep(long millisec) {
+		try { Thread.sleep(millisec); } catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+	}
+	
 	public TCPClient getTcpclient() {
 		return tcpclient;
 	}
@@ -68,7 +73,7 @@ public class Home extends JFrame {
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
 		contentPane.setLayout(null);
-		
+		JFrame tmp=this;
 		JButton btnConsulterProfil = new JButton("Consulter profil");
 		btnConsulterProfil.addActionListener(new ActionListener() {
 			
@@ -79,6 +84,11 @@ public class Home extends JFrame {
 				demandeConsulterMessage.writeInt(getId());
 				TCPClient tmp_client=getTcpclient();
 				tmp_client.sendMessage(demandeConsulterMessage);
+				sleep(1);
+				Profil profil=new Profil(tmp_client, getId());
+				tmp.dispose();
+				profil.setVisible(true);
+				
 				
 			}
 		});

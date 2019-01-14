@@ -2,6 +2,7 @@ package server;
 
 import java.util.ArrayList;
 
+import dataClasses.Compte;
 import dataClasses.Personne;
 import dataClasses.User;
 import modele.Modele;
@@ -56,6 +57,7 @@ public class ApplicationServeur {
             if (newTCPClient != null) {
                 // Nouveau client accepté !
                 // Je crée le client du serveur
+            	log("y avait client");
                 ServerClient client = new ServerClient(newTCPClient);
                 serverClientList.add(client);
 
@@ -85,44 +87,49 @@ public class ApplicationServeur {
             for (clientIndex = 0; clientIndex < serverClientList.size(); clientIndex++) {
                     ServerClient servClient = serverClientList.get(clientIndex);
                     NetBuffer newMessage = servClient.tcpSock.getNewMessage();
+                    //log("pret a recevoire mess");
                     if (newMessage != null) {
                         if (! newMessage.currentData_isInt()) {
                                 log("ERREUR : message mal formatt�.");
                         } else {
                             int messageType = newMessage.readInteger();
                             NetBuffer reply = new NetBuffer();
+                            log("test");
                             switch(messageType){
-                                case '1':
+                                case 1:
                                     String username = newMessage.readString();
                                     String password = newMessage.readString();
+                                    log("username="+username);
                                     User user = Modele.Connexion(db, username, password);
                                     
                                     
                                     if (user != null) { 
                                         reply.writeInt(user.getIdUser());
                                         reply.writeBool(true);
-                                        reply.writeString("Bienvenue " + username);
+                                        //reply.writeString("Bienvenue " + username);
                                         servClient.tcpSock.sendMessage(reply);  
                                     } else {
                                         reply.writeInt(1);
                                         reply.writeBool(false);
-                                        reply.writeString("couple login/mot de passe inconnu");
+                                        //reply.writeString("couple login/mot de passe inconnu");
                                         servClient.tcpSock.sendMessage(reply);
                                     }
                                     break;
-                                case '2':
+                                case 2:
                                     
 								int idPersonne=newMessage.readInt();
 								Personne perso=Modele.SelectionnerPersonne(db, idPersonne);
-								if (perso != null) { 
-                                    reply.writeInt(user.getIdUser());
-                                    reply.writeBool(true);
-                                    reply.writeString("Bienvenue " + username);
+								Compte compte=Modele.SelectionnerCompte(db,idPersonne);
+								if (perso != null && compte!=null) { 
+                                    reply.writeString(perso.getNom());
+                                    reply.writeString(perso.getPrenom());
+                                    reply.writeString(perso.getDateNaissance());
+                                    reply.writeDouble(compte.getSolde());
                                     servClient.tcpSock.sendMessage(reply);  
                                 } else {
-                                    reply.writeInt(1);
+                                    reply.writeInt(2);
                                     reply.writeBool(false);
-                                    reply.writeString("couple login/mot de passe inconnu");
+                                    //reply.writeString("couple login/mot de passe inconnu");
                                     servClient.tcpSock.sendMessage(reply);
                                 }
                                 break;
