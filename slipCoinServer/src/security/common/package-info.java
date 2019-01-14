@@ -9,4 +9,4 @@
  * @author admin
  *
  */
-package slip.security.common;
+package security.common;

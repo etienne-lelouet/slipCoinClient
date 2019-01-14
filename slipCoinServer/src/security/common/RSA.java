@@ -1,4 +1,4 @@
-package slip.security.common;
+package security.common;
 
 import javax.crypto.Cipher;
 

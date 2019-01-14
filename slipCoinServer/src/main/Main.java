@@ -12,7 +12,7 @@ import server.ApplicationServeur;
  * @author etien
  */
 public class Main {
-    public static Database db = new Database("localhost", "zbeb", "zbeb", "zbeb");
+    public static Database db = new Database("163.172.49.216", "slipCoin", "wef", "ppe2018wef");
     public static int port = 6969;
     
     public static void main (String[] args) {

@@ -1,4 +1,4 @@
-package slip.security.server;
+package security.server;
 
 import security.common.*;
 

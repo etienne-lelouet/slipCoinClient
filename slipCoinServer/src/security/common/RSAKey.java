@@ -1,4 +1,4 @@
-package slip.security.common;
+package security.common;
 
 import java.security.Key;
 import java.security.KeyFactory;

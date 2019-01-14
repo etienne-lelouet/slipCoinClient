@@ -2,6 +2,7 @@ package server;
 
 import java.util.ArrayList;
 
+import dataClasses.Personne;
 import dataClasses.User;
 import modele.Modele;
 import network.buffers.NetBuffer;
@@ -96,8 +97,9 @@ public class ApplicationServeur {
                                     String password = newMessage.readString();
                                     User user = Modele.Connexion(db, username, password);
                                     
+                                    
                                     if (user != null) { 
-                                        reply.writeInt(1);
+                                        reply.writeInt(user.getIdUser());
                                         reply.writeBool(true);
                                         reply.writeString("Bienvenue " + username);
                                         servClient.tcpSock.sendMessage(reply);  
@@ -109,7 +111,22 @@ public class ApplicationServeur {
                                     }
                                     break;
                                 case '2':
-                                    break;
+                                    
+								int idPersonne=newMessage.readInt();
+								Personne perso=Modele.SelectionnerPersonne(db, idPersonne);
+								if (perso != null) { 
+                                    reply.writeInt(user.getIdUser());
+                                    reply.writeBool(true);
+                                    reply.writeString("Bienvenue " + username);
+                                    servClient.tcpSock.sendMessage(reply);  
+                                } else {
+                                    reply.writeInt(1);
+                                    reply.writeBool(false);
+                                    reply.writeString("couple login/mot de passe inconnu");
+                                    servClient.tcpSock.sendMessage(reply);
+                                }
+                                break;
+                                    
                                 default:
                                     reply.writeInt(9);
                                     reply.writeString("error");
