@@ -109,7 +109,7 @@ public class Connecte extends JFrame {
 		int tcpPort=6969;
 		this.tcpclient=new TCPClient("localhost", tcpPort);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 450, 300);
+		setBounds(100, 100, 484, 330);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -184,8 +184,117 @@ public class Connecte extends JFrame {
 		password.setBounds(190, 165, 138, 22);
 		contentPane.add(password);
 		
+		JButton btnInscrire = new JButton("S'inscrire");
+		btnInscrire.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				tmp.dispose();
+				Inscription ins=new Inscription(getTcpclient());
+				ins.setVisible(true);
+				
+			}
+		});
+		btnInscrire.setBounds(357, 13, 97, 25);
+		contentPane.add(btnInscrire);
+		
 		
 		
 	}
-
+	public Connecte(TCPClient t) {
+		//int tcpPort=6969;
+		this.tcpclient=t;
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setBounds(100, 100, 484, 330);
+		contentPane = new JPanel();
+		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
+		setContentPane(contentPane);
+		contentPane.setLayout(null);
+		
+		
+		JLabel lblNewLabel = new JLabel("Connexion");
+		lblNewLabel.setBounds(190, 39, 87, 28);
+		
+		contentPane.add(lblNewLabel);
+		
+		JLabel lblUsername = new JLabel("User");
+		lblUsername.setBounds(81, 125, 87, 22);
+		contentPane.add(lblUsername);
+		
+		JTextPane user = new JTextPane();
+		user.setBounds(190, 125, 138, 22);
+		contentPane.add(user);
+		
+		JLabel lblPassword = new JLabel("Password");
+		lblPassword.setBounds(81, 165, 87, 22);
+		contentPane.add(lblPassword);
+		JFrame tmp=this;
+		JButton btnNewButton = new JButton("Connect");
+		btnNewButton.addActionListener(new ActionListener() {
+			
+			public void actionPerformed(ActionEvent arg0) {
+				
+				String username=user.getText();
+				@SuppressWarnings("deprecation")
+				String pass=password.getText();
+				NetBuffer demandeConnexionMessage = new NetBuffer();
+				demandeConnexionMessage.writeInt(1);
+				demandeConnexionMessage.writeString(username);
+				demandeConnexionMessage.writeString(pass);
+				System.out.println(username+" "+pass);
+				TCPClient tmp_client=getTcpclient();
+				tmp_client.sendMessage(demandeConnexionMessage);
+				sleep(1);
+				//System.out.println(username+" "+pass);
+				NetBuffer mess_recu;
+				while ((mess_recu= tmp_client.getNewMessage()) ==null) {
+					 try { Thread.sleep(1); } catch (InterruptedException e1) {
+		                    e1.printStackTrace();
+		            }
+				}
+				
+				int id=mess_recu.readInt();
+				System.out.println(id);
+				boolean res=mess_recu.readBoolean();
+				
+				if (res) {
+					System.out.println(username+" "+pass);
+					tmp.dispose();
+					Home h=new Home(tmp_client,id);
+					h.setVisible(true);
+					//this.setVisible(false);
+					
+					
+					
+				}
+				else {
+					System.out.println("faute");
+					JOptionPane.showMessageDialog(null, "Compte invalide");
+				}
+			}
+		});
+		btnNewButton.setBounds(180, 219, 97, 25);
+		contentPane.add(btnNewButton);
+		
+		password = new JPasswordField();
+		password.setBounds(190, 165, 138, 22);
+		contentPane.add(password);
+		
+		JButton btnInscrire = new JButton("S'inscrire");
+		btnInscrire.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				tmp.dispose();
+				Inscription ins=new Inscription(getTcpclient());
+				ins.setVisible(true);
+				
+			}
+		});
+		btnInscrire.setBounds(357, 13, 97, 25);
+		contentPane.add(btnInscrire);
+		
+		
+		
+	}
 }

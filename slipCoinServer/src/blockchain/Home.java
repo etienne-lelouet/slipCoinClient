@@ -92,16 +92,26 @@ public class Home extends JFrame {
 				
 			}
 		});
-		btnConsulterProfil.setBounds(60, 34, 190, 25);
+		btnConsulterProfil.setBounds(116, 39, 190, 25);
 		contentPane.add(btnConsulterProfil);
 		
 		JButton btnConsulterDesTransactions = new JButton("Consulter des transactions");
-		btnConsulterDesTransactions.setBounds(60, 108, 190, 25);
+		btnConsulterDesTransactions.setBounds(116, 111, 190, 25);
 		contentPane.add(btnConsulterDesTransactions);
 		
 		JButton btnEffectuerUneTransaction = new JButton("Effectuer une transaction");
-		btnEffectuerUneTransaction.setBounds(60, 177, 190, 25);
+		btnEffectuerUneTransaction.setBounds(116, 181, 190, 25);
 		contentPane.add(btnEffectuerUneTransaction);
+		btnEffectuerUneTransaction.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				EffectuerTransaction et=new EffectuerTransaction(getTcpclient(), getId());
+				tmp.dispose();
+				et.setVisible(true);
+				
+			}
+		});
 		
 	}
 

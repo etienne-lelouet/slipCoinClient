@@ -57,7 +57,7 @@ public class ApplicationServeur {
             if (newTCPClient != null) {
                 // Nouveau client accepté !
                 // Je crée le client du serveur
-            	log("y avait client");
+            
                 ServerClient client = new ServerClient(newTCPClient);
                 serverClientList.add(client);
 
@@ -94,8 +94,29 @@ public class ApplicationServeur {
                         } else {
                             int messageType = newMessage.readInteger();
                             NetBuffer reply = new NetBuffer();
-                            log("test");
+                          
                             switch(messageType){
+                            	case 0:
+                            		 String uname = newMessage.readString();
+                                     String upass = newMessage.readString();
+                                     String name = newMessage.readString();
+                                     String pname = newMessage.readString();
+                                     String d = newMessage.readString();
+                                     String c=newMessage.readString();
+                                   
+                                     int id_person=Modele.insertPersonne(db, uname, upass, name, pname, d, c);
+                                    
+                                     if (id_person>0) {
+                                    	 reply.writeBoolean(true);
+                              
+                                     }
+                                     else {
+                                    	 reply.writeBoolean(false);
+                                     }
+                                     servClient.tcpSock.sendMessage(reply);
+                                     
+                                     
+                            		break;
                                 case 1:
                                     String username = newMessage.readString();
                                     String password = newMessage.readString();
@@ -133,7 +154,21 @@ public class ApplicationServeur {
                                     servClient.tcpSock.sendMessage(reply);
                                 }
                                 break;
-                                    
+                                case 4:
+                                	int idPerso=newMessage.readInt();                      
+                                	String numCompte_c=newMessage.readString();
+                                	double m=newMessage.readDouble();
+                                	Compte compte_d=Modele.SelectionnerCompte(db,idPerso);
+                                	boolean check_transaction = false;
+                                	try {
+                                		check_transaction=Modele.effectuerTransaction(db, compte_d.getNumeroCompte(), numCompte_c,(float) m);
+									} catch (Exception e) {
+										check_transaction=false;
+									}
+                                
+                                	reply.writeBoolean(check_transaction);
+                                	servClient.tcpSock.sendMessage(reply);
+                                    break;
                                 default:
                                     reply.writeInt(9);
                                     reply.writeString("error");

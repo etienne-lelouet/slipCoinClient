@@ -166,7 +166,7 @@ public class Modele {
             System.out.println("Erreur : " + exp);
             return 0;
         }
-        return 0;
+        return 1;
     }
 
     public static int insertEntreprise(Database database, String username, String password, String nom, String description, 
